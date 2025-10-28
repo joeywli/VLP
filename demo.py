@@ -165,7 +165,7 @@ class VLPDemoApp:
             ).reshape(276, 282)
 
     def create_led_visualization(self):
-        self.fig = Figure(figsize=(10, 10), dpi=100)
+        self.fig = Figure(figsize=(8, 8), dpi=100)
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.left_frame)
         self.ax = self.fig.add_subplot()
 
@@ -176,9 +176,9 @@ class VLPDemoApp:
 
     def update_led_visualization(self):
         self.ax.clear()
-        self.ax.set_title("LED Visualization")
-        self.ax.set_xlabel("x-axis (cm)")
-        self.ax.set_ylabel("y-axis (cm)")
+        self.ax.set_title("LED Visualization", fontsize=18)
+        self.ax.set_xlabel("x-axis (cm)", fontsize=18)
+        self.ax.set_ylabel("y-axis (cm)", fontsize=18)
 
         rss_values = np.max(self.base_rss_values * self.degradation_factors, axis=2)
 
@@ -188,14 +188,14 @@ class VLPDemoApp:
         return img
 
     def create_positioning_area(self):
-        self.fig2 = Figure(figsize=(10, 10), dpi=100)
+        self.fig2 = Figure(figsize=(8, 8), dpi=100)
         # self.fig2.tight_layout(pad=0.5)
         self.canvas2 = FigureCanvasTkAgg(self.fig2, master=self.right_frame)
         self.ax2 = self.fig2.add_subplot()
 
-        self.ax2.set_title("Positioning Area")
-        self.ax2.set_xlabel("x-axis (cm)")
-        self.ax2.set_ylabel("y-axis (cm)")
+        self.ax2.set_title("Positioning Area", fontsize=18)
+        self.ax2.set_xlabel("x-axis (cm)", fontsize=18)
+        self.ax2.set_ylabel("y-axis (cm)", fontsize=18)
         self.ax2.grid(True)
 
         self.ax2.set_xlim(0, 281)
@@ -234,6 +234,11 @@ class VLPDemoApp:
         self.ax2.add_patch(self.predicted_pos)
 
         self.ax2.legend(loc="upper right")
+        
+        # Set legend font size
+        legend = self.ax2.get_legend()
+        for text in legend.get_texts():
+            text.set_fontsize(16)
 
         self.dragging = False
 
@@ -369,6 +374,10 @@ class VLPDemoApp:
         )
 
     def reset_simulation(self):
+        
+        self.fig.savefig("led_visualization.png")
+        self.fig2.savefig("positioning_area.png")
+        
         self.degradation_factors = np.ones(leds.shape[0], dtype=np.float32)
 
         # Make online learning models forget

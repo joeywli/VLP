@@ -20,7 +20,7 @@ def calculate_decay_constant(r90_hrs: float):
         0.9 = e^{-k \cdot r90\_hours} = e^{\ln(0.9)}
     $$
     $$
-        k = \frac{\ln(0.9)}{r90\_hours}
+        -k = \frac{\ln(0.9)}{r90\_hours}
     $$
     """
     decay_k = np.log(1/0.9) / r90_hrs

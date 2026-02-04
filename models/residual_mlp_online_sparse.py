@@ -31,7 +31,7 @@ class MLPResNet(nn.Module):
         self.norm = NormalizeInput()
 
         self.entry = nn.Sequential(
-            nn.Linear(36, 256),
+            nn.Linear(9, 256),
             nn.ReLU()
         )
 
@@ -53,7 +53,7 @@ class NormalizeInput(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return x / (x.norm(dim=1, keepdim=True) + 1e-8)
 
-class ResidualMLPOnline(BaseModel):
+class ResidualMLPOnlineSparse(BaseModel):
     def __init__(self, data_npy_path: str, batch_size=64, lr=0.001, epochs=250, device="cpu", seed=None):
         """
         Initialize the MLP model.
@@ -65,7 +65,7 @@ class ResidualMLPOnline(BaseModel):
         self.model.apply(init_weights)
 
         self.data = torch.tensor(np.load(data_npy_path), dtype=torch.float32, device=device)
-        self.scalars = torch.ones(self.data.shape[2], dtype=torch.float32, device=device)
+        self.scalars = torch.ones(9, dtype=torch.float32, device=device)
         self.min_positions = torch.zeros(2, dtype=torch.long, device=device)
         self.max_positions = torch.tensor([self.data.shape[1] - 1, self.data.shape[0] - 1], dtype=torch.long, device=device)
 
@@ -95,7 +95,8 @@ class ResidualMLPOnline(BaseModel):
         for _ in bar:
             for X, y in loader:
                 optimizer.zero_grad()
-                outputs = self.model(X)
+                # Use only the 9 selected features for config 2
+                outputs = self.model(X[:, [0, 2, 4, 12, 14, 16, 24, 26, 28]])
                 # loss = (torch.norm(outputs - y.float(), dim=1)**2).mean()
                 loss = criterion(outputs, y.float())
                 loss.backward()
@@ -111,6 +112,9 @@ class ResidualMLPOnline(BaseModel):
         :return: The predictions.
         """
         self.model.eval()
+        
+        # Use only the 9 selected features for config 2
+        X = X[:, [0, 2, 4, 12, 14, 16, 24, 26, 28]]
 
         # Apply the scalars to the input data
         X = X * self.scalars
@@ -136,12 +140,12 @@ class ResidualMLPOnline(BaseModel):
             positions_bin = positions_bins[:, i, :]
 
             # Extract the references from the data array using the positions
-            references = self.data[positions_bin[:, 1], positions_bin[:, 0]]
+            references = self.data[positions_bin[:, 1], positions_bin[:, 0]][:, [0, 2, 4, 12, 14, 16, 24, 26, 28]]
             # Only consider references that are not -1, which indicates invalid data
             mask = torch.all(references != -1, axis=1)
 
             # Use RANSAC to refine the scalars
-            for i in range(36):
+            for i in range(9):
                 if mask.sum() < 2: # Need at least 2 points to fit a line
                     continue
                 updated_scalar = fit_ransac_line(X_bin[mask, i].cpu().numpy().astype(np.float32), references[mask, i].cpu().numpy().astype(np.float32), threshold=0.1, max_iters=50, seed=self.seed)

@@ -5,6 +5,7 @@ from .mlp import MLP
 from .mlp_online import MLPOnline
 from .mlp_online_pico import MLPOnlinePico
 from .residual_mlp_online import ResidualMLPOnline
+from .residual_mlp_online_sparse import ResidualMLPOnlineSparse
 
 from .knn import KNN
 from .wknn import WKNN
@@ -34,6 +35,7 @@ def register_models() -> TaskRegistry:
     task_registry.register("WOKNN-ONLINE", WOKNNOnline, data_npy_path="./dataset/heatmaps/heatmap_176/cleaned_LAMBERTIAN-IDW-BAD_LED.npy", K_range=[10,20])
 
     task_registry.register("RESIDUAL-MLP-ONLINE", ResidualMLPOnline, data_npy_path="./dataset/heatmaps/heatmap_176/cleaned_LAMBERTIAN-IDW.npy", epochs=50)
+    task_registry.register("RESIDUAL-MLP-ONLINE-SPARSE", ResidualMLPOnlineSparse, data_npy_path="./dataset/heatmaps/heatmap_176/cleaned_LAMBERTIAN-IDW.npy", epochs=50)
     task_registry.register("PICO-INTERFACE", PicoInterface, serial_port='COM5')
 
     return task_registry

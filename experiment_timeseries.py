@@ -80,8 +80,9 @@ def generate_aged_samples(data: npt.NDArray, valid_mask: npt.NDArray, relative_d
     aged_samples = samples * relative_decay[:, None, :]
 
     # Add flickering
-    # flickering = rng.choice([0, 1], size=aged_samples.shape, p=[args.flickering_prob, 1 - args.flickering_prob])
-    # aged_samples = aged_samples * flickering # Apply flickering to the samples
+    flickering = rng.choice([0, 1], size=aged_samples.shape, p=[args.flickering_prob, 1 - args.flickering_prob])
+    aged_samples = aged_samples * flickering # Apply flickering to the samples
+    print(f"Applied flickering to { (flickering == 0).sum() } samples")
 
     return aged_samples, sample_locs
 
